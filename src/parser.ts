@@ -13,7 +13,7 @@
  * Both extractions are pure functions over a single HTML string. They throw
  * GHCRParseError on missing structure so the caller can preserve the previous
  * KV value rather than overwriting it with garbage when GitHub changes the
- * page format. NEVER swallow the error and write a "?" or "0" — silence is
+ * page format. NEVER swallow the error and write a "?" or "0". Silence is
  * worse than staleness for a public-facing badge.
  *
  * No DOM parser dependency on purpose: the two structures we care about are
@@ -65,7 +65,7 @@ export function formatCount(n: number): string {
 /**
  * Parse a GHCR package-page HTML string into structured stats.
  * Throws GHCRParseError if either the total-downloads block or the
- * sparkline rects can't be located — these are signals that GitHub
+ * sparkline rects can't be located. These are signals that GitHub
  * changed the page format and the caller must NOT overwrite KV.
  */
 export function parseGHCRPage(html: string): PackageStats {
@@ -75,7 +75,7 @@ export function parseGHCRPage(html: string): PackageStats {
   //   <h3 title="14360">14.4K</h3>
   //
   // The exact integer lives in the `title` attribute; the visible text is
-  // an abbreviated rendering. We capture both — title for storage/math,
+  // an abbreviated rendering. We capture both: title for storage/math,
   // text for display fallback.
   const totalRegex =
     /Total downloads<\/span>\s*<h3\s+title="(\d+)"[^>]*>([^<]+)<\/h3>/i;

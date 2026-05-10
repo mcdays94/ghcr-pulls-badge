@@ -1,8 +1,8 @@
-// Cloudflare Worker config — ghcr-pulls-badge.
+// Cloudflare Worker config for ghcr-pulls-badge.
 //
 // This Worker scrapes ANY public GHCR package page on a configurable cron and
 // serves a shields.io endpoint-badge JSON with pull counts. Every value below
-// can be customised — that's the whole point of the project.
+// can be customised, which is the whole point of the project.
 //
 // First-time setup (5 minutes):
 //
@@ -31,7 +31,7 @@
   "compatibility_date": "2026-05-10",
   "compatibility_flags": ["nodejs_compat"],
 
-  // Public env vars baked into the deployed Worker. None of these are secret —
+  // Public env vars baked into the deployed Worker. None of these are secret;
   // they all describe a public GitHub package page.
   "vars": {
     // The URL the cron handler fetches and scrapes. Either form works:
@@ -61,11 +61,11 @@
     // more requests to your Worker; higher = staler pill but fewer requests.
     //
     // Reasonable values:
-    //   3600   (1 hour)  — fresh, high traffic OK on free Workers tier
-    //   21600  (6 hours) — matches the default cron, good default
-    //   86400  (24 hours) — for daily cron, set this to match
+    //   3600   (1 hour):  fresh, high traffic OK on free Workers tier
+    //   21600  (6 hours): matches the default cron, good default
+    //   86400  (24 hours): for daily cron, set this to match
     //
-    // Rule of thumb: set this to roughly your cron interval — there's no point
+    // Rule of thumb: set this to roughly your cron interval. There's no point
     // serving newer-than-cron data, the Worker hasn't refreshed KV yet anyway.
     "BADGE_CACHE_SECONDS": "21600"
   },
@@ -89,7 +89,7 @@
   //
   //   "0 * * * *"         every hour
   //   "*/30 * * * *"      every 30 min
-  //   "0 */6 * * *"       every 6h (default — recommended)
+  //   "0 */6 * * *"       every 6h (default, recommended)
   //   "0 0,12 * * *"      twice a day, midnight + noon UTC
   //   "0 4 * * *"         once a day, 04:00 UTC
   //   "0 4 * * 1"         once a week, Monday 04:00 UTC

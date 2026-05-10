@@ -16,7 +16,7 @@ async function loadFixture(name: string): Promise<string> {
 
 describe("parseGHCRPage", () => {
   // The fixture is an arbitrary public GHCR package page captured at a known
-  // moment. The exact numbers below are pinned to that capture — when
+  // moment. The exact numbers below are pinned to that capture. When
   // refreshing the fixture, update both the title-attribute integer and the
   // pretty-text together (they always come from the same <h3> block).
   it("extracts total downloads as exact integer + pretty string", async () => {
@@ -31,7 +31,7 @@ describe("parseGHCRPage", () => {
     const stats = parseGHCRPage(html);
 
     expect(stats.daily).toHaveLength(30);
-    // Newest entry — the rightmost bar in the sparkline (right-to-left order).
+    // Newest entry: the rightmost bar in the sparkline (right-to-left order).
     expect(stats.daily[0]).toEqual({ date: "2026-05-10", count: 412 });
     expect(stats.daily[1]).toEqual({ date: "2026-05-09", count: 847 });
 
@@ -54,7 +54,7 @@ describe("parseGHCRPage", () => {
     expect(stats.monthlyDownloads).toBeLessThanOrEqual(stats.totalDownloads);
   });
 
-  it("does not set capturedAt — that's the caller's responsibility", async () => {
+  it("does not set capturedAt; that's the caller's responsibility", async () => {
     const html = await loadFixture("ghcr-page-example.html");
     const stats = parseGHCRPage(html);
     expect(stats.capturedAt).toBeUndefined();

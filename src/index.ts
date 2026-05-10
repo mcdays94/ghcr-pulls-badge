@@ -1,5 +1,5 @@
 /**
- * ghcr-pulls-badge — Cloudflare Worker.
+ * ghcr-pulls-badge Cloudflare Worker.
  *
  * Cron handler scrapes the configured GHCR package page on a schedule and
  * stashes the parsed stats in KV. HTTP handler reads KV and returns
@@ -8,7 +8,7 @@
  * scrape so the very first README render still returns correct data.
  *
  * Every package-specific value is a `vars` entry in wrangler.jsonc. There's
- * nothing GHCR-package-specific in this source file — fork it, change the
+ * nothing GHCR-package-specific in this source file. Fork it, change the
  * config, deploy. See README for the customisation table.
  */
 
@@ -53,7 +53,7 @@ function parseCacheSeconds(env: Env): number {
 
 /**
  * Scrape GHCR, parse, write to KV, return parsed stats.
- * Throws on network failure or parse failure — caller decides whether to
+ * Throws on network failure or parse failure. The caller decides whether to
  * suppress (cron) or propagate (HTTP cold-start fallback).
  */
 async function refresh(env: Env): Promise<PackageStats> {
@@ -96,7 +96,7 @@ async function readStats(env: Env): Promise<PackageStats> {
   if (raw) {
     return JSON.parse(raw) as PackageStats;
   }
-  // KV is empty — first ever request, before any cron has fired. Scrape now
+  // KV is empty (first ever request, before any cron has fired). Scrape now
   // so we don't serve a broken-looking pill on day zero.
   return refresh(env);
 }
@@ -131,7 +131,7 @@ function errorBadge(): ShieldsBadge {
     color: "lightgrey",
     isError: true,
     // Short cache on errors so the badge recovers quickly once the underlying
-    // problem clears. Independent of BADGE_CACHE_SECONDS — we never want
+    // problem clears. Independent of BADGE_CACHE_SECONDS, since we never want
     // user-configured-long cache on error responses.
     cacheSeconds: 60,
   };
@@ -197,10 +197,10 @@ function landingPage(env: Env, origin: string): string {
 
   <h2>Endpoints</h2>
   <ul>
-    <li><a href="/badge-monthly.json"><code>/badge-monthly.json</code></a> — last-30-days pulls</li>
-    <li><a href="/badge-total.json"><code>/badge-total.json</code></a> — all-time pulls</li>
-    <li><a href="/stats.json"><code>/stats.json</code></a> — raw stats incl. 30-day daily series</li>
-    <li><a href="/health"><code>/health</code></a> — liveness check</li>
+    <li><a href="/badge-monthly.json"><code>/badge-monthly.json</code></a> for last-30-days pulls</li>
+    <li><a href="/badge-total.json"><code>/badge-total.json</code></a> for all-time pulls</li>
+    <li><a href="/stats.json"><code>/stats.json</code></a> for raw stats incl. 30-day daily series</li>
+    <li><a href="/health"><code>/health</code></a> for liveness checks</li>
   </ul>
 
   <h2>README markdown (copy-paste)</h2>
@@ -222,7 +222,7 @@ export default {
   ): Promise<void> {
     // Use waitUntil so the cron event-loop tick can return immediately;
     // the scrape continues to completion in the background. Errors are
-    // logged but NOT rethrown — KV retains the previous good value, which
+    // logged but NOT rethrown. KV retains the previous good value, which
     // is the right behaviour for a cron that runs a few times a day.
     ctx.waitUntil(
       refresh(env).then(
@@ -279,7 +279,7 @@ export default {
     } catch (err) {
       console.error("[fetch] handler failed:", err);
       // shields.io renders the badge from the JSON we return, so we MUST
-      // return 200 even on errors — a non-200 yields a generic broken-badge
+      // return 200 even on errors. A non-200 yields a generic broken-badge
       // graphic. isError=true tells shields.io to colour it red.
       return Response.json(errorBadge(), {
         status: 200,
