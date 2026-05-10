@@ -17,6 +17,14 @@
   <em>The first two badges above are live, fetching real numbers from <a href="https://github.com/mcdays94/nas-doctor">nas-doctor</a> via this exact codebase.</em>
 </p>
 
+<p align="center">
+  <img src="docs/customisation-showcase.gif" width="80%" alt="Animated showcase: a single ghcr pulls/month pill morphing through default Docker blue, brightgreen, blueviolet, and orange BADGE_COLOR values, then through 'docker pulls' and 'monthly' BADGE_LABEL_MONTHLY values, then through the for-the-badge style and the github logo. Each transition is a one-line change in wrangler.jsonc or a shields.io URL parameter.">
+</p>
+
+<p align="center">
+  <em>One Worker, every customisation knob. Each transition is a one-line change in <code>wrangler.jsonc</code> or a shields.io URL parameter.</em>
+</p>
+
 ---
 
 ## What this is
@@ -280,7 +288,7 @@ curl http://localhost:8787/__scheduled
 - [x] Cold-start synchronous scrape
 - [x] Fail-loud parser preserving last-known-good on format drift
 - [ ] **`/sparkline.svg`** to render the 30-day daily series as an inline SVG mini-chart for READMEs (data is already in `/stats.json`, just needs the renderer)
-- [ ] **Customisation-cycling demo GIFs** in this README (color / text / style / cron tradeoffs)
+- [x] **Customisation-cycling demo GIF** in this README (see hero above)
 - [ ] Multi-package support (one Worker, N packages, separate badge URLs)
 - [ ] Optional Slack/Discord webhook on milestone pulls (10K, 100K, 1M)
 
