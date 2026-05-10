@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/customisation-showcase.gif" width="80%" alt="Animated showcase: a single ghcr pulls/month pill morphing through default Docker blue, brightgreen, blueviolet, and orange BADGE_COLOR values, then through 'docker pulls' and 'monthly' BADGE_LABEL_MONTHLY values, then through the for-the-badge style and the github logo. Each transition is a one-line change in wrangler.jsonc or a shields.io URL parameter.">
+  <img src="docs/customisation-showcase.gif" alt="Animated showcase: a single ghcr pulls/month pill morphing through default Docker blue, brightgreen, blueviolet, and orange BADGE_COLOR values, then through 'docker pulls' and 'monthly' BADGE_LABEL_MONTHLY values, then through the for-the-badge style and the github logo. Each transition is a one-line change in wrangler.jsonc or a shields.io URL parameter.">
 </p>
 
 <p align="center">
