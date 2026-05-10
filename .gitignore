@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Wrangler
+.wrangler/
+.dev.vars
+.dev.vars.*
+worker-configuration.d.ts
+
+# TypeScript build output
+dist/
+*.tsbuildinfo
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Test
+coverage/
+.vitest-cache/
+
+# Logs
+*.log
+npm-debug.log*

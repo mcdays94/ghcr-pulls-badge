@@ -1,0 +1,40 @@
+{
+  "name": "ghcr-pulls-badge",
+  "version": "0.1.0",
+  "description": "Cloudflare Worker template that scrapes any public GHCR package page on a cron and exposes a shields.io endpoint badge with pull counts. Drop-in replacement for the missing GHCR pulls API.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/mcdays94/ghcr-pulls-badge",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcdays94/ghcr-pulls-badge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mcdays94/ghcr-pulls-badge/issues"
+  },
+  "keywords": [
+    "ghcr",
+    "github-container-registry",
+    "shields-io",
+    "badge",
+    "cloudflare-workers",
+    "docker",
+    "pull-counter",
+    "template"
+  ],
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "types": "wrangler types"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240909.0",
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4",
+    "wrangler": "^3.83.0"
+  }
+}

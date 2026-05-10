@@ -1,0 +1,106 @@
+// Cloudflare Worker config — ghcr-pulls-badge.
+//
+// This Worker scrapes ANY public GHCR package page on a configurable cron and
+// serves a shields.io endpoint-badge JSON with pull counts. Every value below
+// can be customised — that's the whole point of the project.
+//
+// First-time setup (5 minutes):
+//
+//   1. npx wrangler kv namespace create STATS
+//      → copy the printed `id` into kv_namespaces[0].id below
+//
+//   2. Edit `vars` below:
+//      - GHCR_PACKAGE_URL      → your public GHCR package page
+//      - GHCR_PACKAGE_PAGE_URL → click-through target (usually same URL)
+//      - BADGE_LABEL_*         → what shows on the left side of the pill
+//      - BADGE_COLOR           → hex (no #) or shields.io named colour
+//      - BADGE_CACHE_SECONDS   → how long shields.io caches the badge response
+//
+//   3. Choose your cron cadence in `triggers.crons`. See README customization table.
+//
+//   4. (multi-account OAuth users only) add `account_id`:
+//        "account_id": "your-cloudflare-account-id"
+//
+//   5. npx wrangler deploy
+//
+// See README → "Customisation" for the full table of tradeoffs.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ghcr-pulls-badge",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-10",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Public env vars baked into the deployed Worker. None of these are secret —
+  // they all describe a public GitHub package page.
+  "vars": {
+    // The URL the cron handler fetches and scrapes. Either form works:
+    //   https://github.com/<owner>/<repo>/pkgs/container/<package>     (canonical)
+    //   https://github.com/users/<owner>/packages/container/package/<pkg>  (redirects)
+    //
+    // Replace this placeholder with your own GHCR package URL.
+    "GHCR_PACKAGE_URL": "https://github.com/OWNER/REPO/pkgs/container/PACKAGE",
+
+    // The URL clicking the badge pill should send users to. Usually the same
+    // as GHCR_PACKAGE_URL but kept separate so you could intercept clicks
+    // (e.g. send people to a marketing landing page).
+    "GHCR_PACKAGE_PAGE_URL": "https://github.com/OWNER/REPO/pkgs/container/PACKAGE",
+
+    // Pill label text. Shown on the left side of the badge.
+    "BADGE_LABEL_MONTHLY": "ghcr pulls/month",
+    "BADGE_LABEL_TOTAL": "ghcr pulls",
+
+    // Pill colour as 6-char hex (no leading #) or a shields.io named colour
+    // (brightgreen, green, yellowgreen, yellow, orange, red, blue, lightgrey,
+    //  blueviolet, success, important, critical, informational, inactive).
+    // Default: Docker blue.
+    "BADGE_COLOR": "2496ed",
+
+    // How long shields.io should cache the badge response (its rendered SVG)
+    // before re-fetching from this Worker. Tradeoff: lower = fresher pill but
+    // more requests to your Worker; higher = staler pill but fewer requests.
+    //
+    // Reasonable values:
+    //   3600   (1 hour)  — fresh, high traffic OK on free Workers tier
+    //   21600  (6 hours) — matches the default cron, good default
+    //   86400  (24 hours) — for daily cron, set this to match
+    //
+    // Rule of thumb: set this to roughly your cron interval — there's no point
+    // serving newer-than-cron data, the Worker hasn't refreshed KV yet anyway.
+    "BADGE_CACHE_SECONDS": "21600"
+  },
+
+  // KV namespace where the cron stores the latest scraped stats.
+  // The fetch handler reads from here on every request. On cold start
+  // (KV empty), the fetch handler falls back to a synchronous scrape so
+  // day-zero badge requests still work.
+  //
+  // Run `npx wrangler kv namespace create STATS` to mint a fresh ID.
+  "kv_namespaces": [
+    {
+      "binding": "STATS",
+      "id": "REPLACE_WITH_REAL_KV_NAMESPACE_ID"
+    }
+  ],
+
+  // Cron schedule. GHCR daily counts only update once per UTC day, so
+  // running more often than every few hours is wasted work. See README
+  // for a customisation table of common cadences.
+  //
+  //   "0 * * * *"         every hour
+  //   "*/30 * * * *"      every 30 min
+  //   "0 */6 * * *"       every 6h (default — recommended)
+  //   "0 0,12 * * *"      twice a day, midnight + noon UTC
+  //   "0 4 * * *"         once a day, 04:00 UTC
+  //   "0 4 * * 1"         once a week, Monday 04:00 UTC
+  "triggers": {
+    "crons": ["0 */6 * * *"]
+  },
+
+  // Tail logs in Cloudflare dashboard. Sample rate 1 because traffic is tiny
+  // (a handful of cron ticks + badge requests per day).
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}
