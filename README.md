@@ -2,13 +2,13 @@
 
 <p align="center">
   <strong>A pull-counter pill for any public GitHub Container Registry image.</strong><br>
-  GHCR doesn't expose pull counts via any API — but the package landing page does.<br>
+  GHCR doesn't expose pull counts via any API, but the package landing page does.<br>
   This Cloudflare Worker scrapes it on a cron and serves a shields.io badge.
 </p>
 
 <p align="center">
-  <a href="https://github.com/mcdays94/nas-doctor/pkgs/container/nas-doctor"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fnas-doctor-stats.lusostreams.workers.dev%2Fbadge-monthly.json&style=flat-square&logo=docker&logoColor=white" alt="GHCR pulls/month — live"></a>
-  <a href="https://github.com/mcdays94/nas-doctor/pkgs/container/nas-doctor"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fnas-doctor-stats.lusostreams.workers.dev%2Fbadge-total.json&style=flat-square&logo=docker&logoColor=white" alt="GHCR pulls — live"></a>
+  <a href="https://github.com/mcdays94/nas-doctor/pkgs/container/nas-doctor"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fnas-doctor-stats.lusostreams.workers.dev%2Fbadge-monthly.json&style=flat-square&logo=docker&logoColor=white" alt="GHCR pulls/month (live)"></a>
+  <a href="https://github.com/mcdays94/nas-doctor/pkgs/container/nas-doctor"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fnas-doctor-stats.lusostreams.workers.dev%2Fbadge-total.json&style=flat-square&logo=docker&logoColor=white" alt="GHCR pulls (live)"></a>
   <a href="https://github.com/mcdays94/ghcr-pulls-badge/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-2ea44f?style=flat-square" alt="MIT License"></a>
   <a href="https://workers.cloudflare.com"><img src="https://img.shields.io/badge/runs%20on-Cloudflare%20Workers-f38020?style=flat-square&logo=cloudflare&logoColor=white" alt="Runs on Cloudflare Workers"></a>
 </p>
@@ -26,8 +26,8 @@ GitHub Container Registry shows pull counts on the public package landing page (
 This repo is a tiny Cloudflare Worker that fills the gap:
 
 1. **Cron handler** scrapes the GHCR package page on a configurable schedule (default: every 6h)
-2. **Parses two values** from the server-rendered HTML — exact total all-time pulls + 30 daily counts from the sparkline SVG
-3. **Stores in KV** — exact integers, not just rounded display values
+2. **Parses two values** from the server-rendered HTML: exact total all-time pulls and 30 daily counts from the sparkline SVG
+3. **Stores in KV** (exact integers, not just rounded display values)
 4. **HTTP handler** serves a [shields.io endpoint badge](https://shields.io/badges/endpoint-badge) JSON that any README can render via a single `<img>` tag
 
 It runs comfortably on the Workers free tier. One Worker per package; one shared codebase.
@@ -54,7 +54,7 @@ npx wrangler kv namespace create STATS
 npx wrangler deploy
 ```
 
-That's it. Visit your Worker's URL (printed by `wrangler deploy`) — there's a landing page at `/` with the README markdown ready to copy-paste.
+That's it. Visit your Worker's URL (printed by `wrangler deploy`). There's a landing page at `/` with the README markdown ready to copy-paste.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fmcdays94%2Fghcr-pulls-badge)
 
@@ -79,8 +79,8 @@ Replace `YOUR_WORKER.workers.dev` with the hostname of your deployed Worker (or 
 | --------------------- | -------------------------------------------------------------------- |
 | `/`                   | Plain HTML landing page with copy-paste badge markdown               |
 | `/badge.json`         | Alias for `/badge-monthly.json`                                      |
-| `/badge-monthly.json` | shields.io endpoint badge — last-30-days pulls (e.g. `8.7K /month`)  |
-| `/badge-total.json`   | shields.io endpoint badge — all-time pulls (e.g. `14.4K`)            |
+| `/badge-monthly.json` | shields.io endpoint badge for last-30-days pulls (e.g. `8.7K /month`)  |
+| `/badge-total.json`   | shields.io endpoint badge for all-time pulls (e.g. `14.4K`)            |
 | `/stats.json`         | Raw stats incl. exact integers + per-day series for the last 30 days |
 | `/health`             | `{ ok: true, package: "..." }` for liveness checks                   |
 
@@ -90,13 +90,13 @@ Every dial lives in `wrangler.jsonc`. No code changes needed for any of this.
 
 ### 1. Cron frequency
 
-How often the Worker re-scrapes GHCR. GHCR daily counts only update once per UTC day, so running more often than every few hours is wasted work — but you can if you want. **Set `BADGE_CACHE_SECONDS` to roughly match your cron interval** so shields.io doesn't cache fresher-than-source data.
+How often the Worker re-scrapes GHCR. GHCR daily counts only update once per UTC day, so running more often than every few hours is wasted work, but you can if you want. **Set `BADGE_CACHE_SECONDS` to roughly match your cron interval** so shields.io doesn't cache fresher-than-source data.
 
 | Cron expression  | Cadence            | Recommended `BADGE_CACHE_SECONDS` | Use when                                                             |
 | ---------------- | ------------------ | --------------------------------- | -------------------------------------------------------------------- |
 | `*/15 * * * *`   | every 15 min       | `900` (15 min)                    | Live launch day, watching numbers in real time                       |
 | `0 * * * *`      | every hour         | `3600` (1 h)                      | High-velocity project, want fresh numbers in the README              |
-| `0 */6 * * *`    | every 6 hours      | `21600` (6 h)                     | **Default — recommended.** Plenty fresh, low GHCR pressure           |
+| `0 */6 * * *`    | every 6 hours      | `21600` (6 h)                     | **Default (recommended).** Plenty fresh, low GHCR pressure           |
 | `0 0,12 * * *`   | twice a day        | `43200` (12 h)                    | Stable project, daily-ish updates are fine                           |
 | `0 4 * * *`      | daily, 04:00 UTC   | `86400` (24 h)                    | Mature project, low traffic, minimise Worker invocations             |
 | `0 4 * * 1`      | weekly, Mondays    | `604800` (7 d)                    | Archived or low-activity project where pulls barely move week-to-week |
@@ -108,7 +108,7 @@ How often the Worker re-scrapes GHCR. GHCR daily counts only update once per UTC
 <table>
 <thead><tr><th align="left"><code>BADGE_COLOR</code></th><th align="left">Renders as</th></tr></thead>
 <tbody>
-<tr><td><code>2496ed</code> (default — Docker blue)</td><td><img src="https://img.shields.io/badge/ghcr%20pulls%2Fmonth-14.1K%20%2Fmonth-2496ed?style=flat-square&logo=docker&logoColor=white" alt=""></td></tr>
+<tr><td><code>2496ed</code> (default, Docker blue)</td><td><img src="https://img.shields.io/badge/ghcr%20pulls%2Fmonth-14.1K%20%2Fmonth-2496ed?style=flat-square&logo=docker&logoColor=white" alt=""></td></tr>
 <tr><td><code>brightgreen</code></td><td><img src="https://img.shields.io/badge/ghcr%20pulls%2Fmonth-14.1K%20%2Fmonth-brightgreen?style=flat-square&logo=docker&logoColor=white" alt=""></td></tr>
 <tr><td><code>blueviolet</code></td><td><img src="https://img.shields.io/badge/ghcr%20pulls%2Fmonth-14.1K%20%2Fmonth-blueviolet?style=flat-square&logo=docker&logoColor=white" alt=""></td></tr>
 <tr><td><code>orange</code></td><td><img src="https://img.shields.io/badge/ghcr%20pulls%2Fmonth-14.1K%20%2Fmonth-orange?style=flat-square&logo=docker&logoColor=white" alt=""></td></tr>
@@ -130,13 +130,13 @@ How often the Worker re-scrapes GHCR. GHCR daily counts only update once per UTC
 <tr><td><code>📦 monthly</code> (emoji)</td><td><img src="https://img.shields.io/badge/%F0%9F%93%A6%20monthly-14.1K%20%2Fmonth-2496ed?style=flat-square&logo=docker&logoColor=white" alt=""></td></tr>
 </tbody></table>
 
-### 4. Cache TTL — `BADGE_CACHE_SECONDS`
+### 4. Cache TTL (`BADGE_CACHE_SECONDS`)
 
 Tells shields.io how long to cache the badge SVG before re-fetching from your Worker. Lower = fresher pill but more Worker invocations; higher = staler pill but cheaper. **Rule of thumb: match your cron interval.** See the cron table above.
 
 ### 5. shields.io URL parameters (no Worker change needed)
 
-The README author controls these — they're appended to the shields.io URL in the `<img src="...">`, not configured in the Worker. Mix and match freely.
+The README author controls these. They're appended to the shields.io URL in the `<img src="...">`, not configured in the Worker. Mix and match freely.
 
 #### Style
 
@@ -194,7 +194,7 @@ Two extractions per scrape:
 1. **Total all-time pulls** from `<h3 title="14360">14.4K</h3>` after the "Total downloads" label. The exact integer is in the `title` attribute; the visible text is the rounded version GHCR shows users.
 2. **30-day daily series** from `<rect data-merge-count="N" data-date="YYYY-MM-DD">` × 30 in the sparkline SVG. Their sum = the "/month" metric.
 
-**Fail-loud parser.** When GitHub changes the page format, the parser throws `GHCRParseError` and the cron logs the error. KV retains the previous good value — better stale than `?` or `0`.
+**Fail-loud parser.** When GitHub changes the page format, the parser throws `GHCRParseError` and the cron logs the error. KV retains the previous good value. Better stale than `?` or `0`.
 
 **Cold-start synchronous scrape.** When the very first request hits a freshly deployed Worker (KV is empty before the cron has fired), the HTTP handler does an inline scrape so day-zero badge requests still work.
 
@@ -211,7 +211,7 @@ If you're shipping production-critical infrastructure, don't make this a load-be
 <details>
 <summary><strong>Why scrape instead of using the GitHub API?</strong></summary>
 
-The [GitHub Packages REST API](https://docs.github.com/en/rest/packages/packages) returns container package metadata but the `download_count` field is always `0` or absent for container packages. GitHub doesn't track per-pull counts at the API level — only the website's package page renders them, derived from internal aggregation that hasn't been productised as an API endpoint.
+The [GitHub Packages REST API](https://docs.github.com/en/rest/packages/packages) returns container package metadata but the `download_count` field is always `0` or absent for container packages. GitHub doesn't track per-pull counts at the API level. Only the website's package page renders them, derived from internal aggregation that hasn't been productised as an API endpoint.
 </details>
 
 <details>
@@ -223,7 +223,7 @@ Same caveat as every container registry pull metric: it includes CI re-pulls, pr
 <details>
 <summary><strong>Does this work for private packages?</strong></summary>
 
-No. The package page requires GitHub auth for private packages. This Worker uses unauthenticated requests by design — adding auth would require GitHub App / PAT management out of scope for a read-only badge.
+No. The package page requires GitHub auth for private packages. This Worker uses unauthenticated requests by design. Adding auth would require GitHub App / PAT management out of scope for a read-only badge.
 </details>
 
 <details>
@@ -253,16 +253,16 @@ Free tier limits at time of writing: 100k requests/day, 1k KV writes/day, 100k K
 <details>
 <summary><strong>Can I track multiple packages from one Worker?</strong></summary>
 
-Not yet — one Worker per package. Adding multi-package support is on the roadmap (see issue tracker). For now, deploy multiple Workers from the same template repo with different `wrangler.jsonc` configs.
+Not yet. One Worker per package. Adding multi-package support is on the roadmap (see issue tracker). For now, deploy multiple Workers from the same template repo with different `wrangler.jsonc` configs.
 </details>
 
 ## Local development
 
 ```bash
 npm install
-npm run test           # vitest run — parser unit tests
+npm run test           # vitest run, parser unit tests
 npm run typecheck      # tsc --noEmit
-npm run dev            # wrangler dev — runs Worker locally
+npm run dev            # wrangler dev, runs Worker locally
 ```
 
 To smoke-test the cron handler:
@@ -279,7 +279,7 @@ curl http://localhost:8787/__scheduled
 - [x] Configurable cron, label, colour, cache TTL
 - [x] Cold-start synchronous scrape
 - [x] Fail-loud parser preserving last-known-good on format drift
-- [ ] **`/sparkline.svg`** — render the 30-day daily series as an inline SVG mini-chart for READMEs (data is already in `/stats.json`, just needs the renderer)
+- [ ] **`/sparkline.svg`** to render the 30-day daily series as an inline SVG mini-chart for READMEs (data is already in `/stats.json`, just needs the renderer)
 - [ ] **Customisation-cycling demo GIFs** in this README (color / text / style / cron tradeoffs)
 - [ ] Multi-package support (one Worker, N packages, separate badge URLs)
 - [ ] Optional Slack/Discord webhook on milestone pulls (10K, 100K, 1M)
