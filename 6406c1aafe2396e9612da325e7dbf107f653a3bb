@@ -1,0 +1,23 @@
+README.md
+  61d391bd6dfd1266 20-27,291
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "6406c1aafe2396e9612da325e7dbf107f653a3bb",
+  "prompts": {
+    "61d391bd6dfd1266": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1edc1dbd4ffeMhJS6o4Yu89Apd",
+        "model": "anthropic/claude-opus-4-7"
+      },
+      "human_author": "mdias",
+      "messages": [],
+      "total_additions": 662,
+      "total_deletions": 1,
+      "accepted_lines": 662,
+      "overriden_lines": 0
+    }
+  }
+}
